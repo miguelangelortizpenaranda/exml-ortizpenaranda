@@ -7,7 +7,7 @@ class ArmBinomial(Arm):
         """
         Inicializa el brazo con distribución binomial.
 
-        :param n: Recompensa máxima para esta distribución.
+        :param n: Recompensa máxima para esta distribución (número de tiradas de ese brazo).
         :param p: Probabilidad de recompensa.
         """
         assert n > 0, "N debe ser un entero positivo."
