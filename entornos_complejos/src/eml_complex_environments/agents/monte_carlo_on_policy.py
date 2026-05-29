@@ -8,10 +8,11 @@ class MonteCarloOnPolicy(Agent):
         self.n_states = environment.observation_space.n
         self.n_actions = environment.action_space.n
         self.Q = np.zeros([self.n_states, self.n_actions])
+        self.n_visits = np.zeros([self.n_states, self.n_actions])
         self.epsilon = epsilon
         self.discount_factor = discount_factor
+
         self.factor = 1
-        self.episode_return = 0
         self.state = 0
         self.episode = []
 
@@ -22,8 +23,7 @@ class MonteCarloOnPolicy(Agent):
         return self._epsilon_greedy_policy(state)
 
     def update_episode_info(self, new_state, action, reward):
-        self.episode.append((self.state, action))
-        self.episode_return += self.factor * reward
+        self.episode.append((self.state, action, reward))
         self.factor *= self.discount_factor
         self.state = new_state
 
@@ -36,13 +36,13 @@ class MonteCarloOnPolicy(Agent):
         #     alpha = 1.0 / n_visits[state, action]
         #     Q[state, action] += alpha * (result_sum - Q[state, action])
 
-        gamma = 0.99
+        #gamma = 0.99
         current_g = 0.0  # Inicializamos el retorno en el estado terminal (es 0.0)
         cummulative_g = 0.0
 
         for state, action, reward in reversed(self.episode):
             # El retorno actual es la recompensa inmediata + el retorno futuro descontado
-            current_g = reward + gamma * current_g
+            current_g = reward + self.factor * current_g
             cummulative_g += current_g
             # Actualizamos el contador de visitas para esta pareja estado-acción
             self.n_visits[state, action] += 1.0
@@ -54,6 +54,12 @@ class MonteCarloOnPolicy(Agent):
         # Al terminar de aprender, vaciamos el episodio para la siguiente partida
         self.episode = []
         return cummulative_g
+
+    def get_episode_len(self):
+        return len(self.episode)
+
+    def getQ(self):
+        return self.Q
 
     # Política epsilon-soft. Se usa para el entrenamiento
     def _random_epsilon_greedy_policy(self, state):

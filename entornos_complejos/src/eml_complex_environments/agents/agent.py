@@ -13,3 +13,7 @@ class Agent(ABC):
     @abstractmethod
     def update(self):
         pass
+
+    @abstractmethod
+    def getQ(self):
+        pass
