@@ -1,8 +1,9 @@
 import numpy as np
 
-from agents.agent import Agent
+from agents.tabular_agent import TabularAgent
 
-class MonteCarloOnPolicy(Agent):
+
+class MonteCarloOnPolicy(TabularAgent):
 
     def __init__(self, environment, epsilon, discount_factor, random_seed, epsilon_decay):
         super().__init__(environment, epsilon, random_seed)
@@ -12,8 +13,6 @@ class MonteCarloOnPolicy(Agent):
         self.discount_factor = discount_factor
         self.epsilon_decay = epsilon_decay
         self.accumulated_return = 0
-
-        self.factor = 1
         self.episode = []
 
     # actions
@@ -46,7 +45,8 @@ class MonteCarloOnPolicy(Agent):
             current_return = reward + self.discount_factor * current_return # Current return equals to immediate reward + future return with a discount factor applied
             self.n_visits[state, action] += 1.0 # Update visit counter for this state-action pair
             learning_rate = 1.0 / self.n_visits[state, action] # Compute learning rate as inverse of visit count for this state-action pair
-            self.Q[state, action] += learning_rate * (current_return - self.Q[state, action]) # Update return table with the proper return for this step
+            expected_return = self.Q[state, action]
+            self.Q[state, action] += learning_rate * (current_return - expected_return) # Update return table with the proper return for this step
 
         total_episode_reward = sum(reward for _, _, reward in self.episode)
         self.episode = [] # Clean episode info for next episode

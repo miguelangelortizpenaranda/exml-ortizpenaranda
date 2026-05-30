@@ -1,8 +1,9 @@
 import numpy as np
 
-from agents.agent import Agent
+from agents.tabular_agent import TabularAgent
 
-class QLearning(Agent):
+
+class QLearning(TabularAgent):
 
     def __init__(self, environment, epsilon, discount_factor, learning_rate, random_seed, epsilon_decay=False):
         super().__init__(environment, epsilon, random_seed)
