@@ -4,16 +4,16 @@ from agents.agent import Agent
 
 class MonteCarloOnPolicy(Agent):
 
-    def __init__(self, environment, epsilon, discount_factor):
-        self.n_states = environment.observation_space.n
-        self.n_actions = environment.action_space.n
-        self.Q = np.zeros([self.n_states, self.n_actions])
+    def __init__(self, environment, epsilon, discount_factor, random_seed, epsilon_decay):
+        super().__init__(environment, epsilon, random_seed)
+
         self.n_visits = np.zeros([self.n_states, self.n_actions])
         self.epsilon = epsilon
         self.discount_factor = discount_factor
+        self.epsilon_decay = epsilon_decay
+        self.accumulated_return = 0
 
         self.factor = 1
-        self.state = 0
         self.episode = []
 
     # actions
@@ -22,38 +22,36 @@ class MonteCarloOnPolicy(Agent):
     def get_action(self, state: int):
         return self._epsilon_greedy_policy(state)
 
-    def update_episode_info(self, new_state, action, reward):
+    def update_episode_info(self, new_state, action, reward, t, episode_finished):
         self.episode.append((self.state, action, reward))
-        self.factor *= self.discount_factor
         self.state = new_state
+        if self.epsilon_decay:
+            self.epsilon = min(1.0, 1000.0 / (t + 1))
 
-    def update(self):
+    def update_post_episode(self):
         # Esto es un disparate ¿por qué?
-        # Porque hay que usar el retorno por cada uno de los episodios pasados (t), no uno total!!
-        # También recorre el episodio hacia delante, cuando normalmente es hacia atrás
+
+        # --> Porque hay que usar el retorno por cada uno de los episodios pasados (t), no uno total!!
+        # --> También recorre el episodio hacia delante, cuando normalmente es hacia atrás
+
         # for (state, action) in episode:
         #     n_visits[state, action] += 1.0
         #     alpha = 1.0 / n_visits[state, action]
         #     Q[state, action] += alpha * (result_sum - Q[state, action])
 
         #gamma = 0.99
-        current_g = 0.0  # Inicializamos el retorno en el estado terminal (es 0.0)
-        cummulative_g = 0.0
+        current_return = 0.0  # Terminal state (current return = 0)
 
         for state, action, reward in reversed(self.episode):
-            # El retorno actual es la recompensa inmediata + el retorno futuro descontado
-            current_g = reward + self.factor * current_g
-            cummulative_g += current_g
-            # Actualizamos el contador de visitas para esta pareja estado-acción
-            self.n_visits[state, action] += 1.0
-            # Calculamos el alfa dinámico (la media exacta de todas las visitas de la historia)
-            alpha = 1.0 / self.n_visits[state, action]
-            # Actualizamos la Tabla Q con el retorno G correcto para este momento del tiempo
-            self.Q[state, action] += alpha * (current_g - self.Q[state, action])
+            current_return = reward + self.discount_factor * current_return # Current return equals to immediate reward + future return with a discount factor applied
+            self.n_visits[state, action] += 1.0 # Update visit counter for this state-action pair
+            learning_rate = 1.0 / self.n_visits[state, action] # Compute learning rate as inverse of visit count for this state-action pair
+            self.Q[state, action] += learning_rate * (current_return - self.Q[state, action]) # Update return table with the proper return for this step
 
-        # Al terminar de aprender, vaciamos el episodio para la siguiente partida
-        self.episode = []
-        return cummulative_g
+        total_episode_reward = sum(reward for _, _, reward in self.episode)
+        self.episode = [] # Clean episode info for next episode
+
+        return total_episode_reward
 
     def get_episode_len(self):
         return len(self.episode)
@@ -61,15 +59,6 @@ class MonteCarloOnPolicy(Agent):
     def getQ(self):
         return self.Q
 
-    # Política epsilon-soft. Se usa para el entrenamiento
-    def _random_epsilon_greedy_policy(self, state):
-        pi_A = np.ones(self.n_actions, dtype=float) * self.epsilon / self.n_actions
-        best_action = np.argmax(self.Q[state])
-        pi_A[best_action] += (1.0 - self.epsilon)
-        return pi_A
-
-    # Política epsilon-greedy a partir de una epsilon-soft
-    def _epsilon_greedy_policy(self, state):
-        pi_A = self._random_epsilon_greedy_policy(state)
-        return np.random.choice(np.arange(self.n_actions), p=pi_A)
+    def getCurrentEpsilon(self):
+        return self.epsilon
 
