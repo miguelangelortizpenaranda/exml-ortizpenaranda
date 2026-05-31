@@ -44,7 +44,7 @@ class MonteCarloOffPolicy(TabularAgent):
             expected_return = self.Q[state, action]
             self.Q[state, action] += learning_rate * (current_return - expected_return) # Update return table with the proper return for this step (bellman)
 
-            # La política objetivo (target) es puramente GREEDY
+            # La política objetivo es greedy, devuelve la que mejor Q tenga
             best_action = np.argmax(self.Q[state])
 
             # REGLA CRÍTICA DE OFF-POLICY:
