@@ -4,6 +4,7 @@
 - **Asignatura:** Extensiones de Machine Learning
 - **Curso:** 2025/2026
 - **Grupo:** exml-ortizpenaranda
+- **URL Repositorio**: https://github.com/miguelangelortizpenaranda/exml-ortizpenaranda
 ## Descripción
 Este repositorio tiene como cometido agrupar los ficheros de código fuente referentes al boque de bandido de k-brazos, así como al módulo de aprendizaje en entornos complejos.
 ## Estructura
