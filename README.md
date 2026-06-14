@@ -10,7 +10,7 @@ Este repositorio tiene como cometido agrupar los ficheros de código fuente refe
 ## Estructura
 exml-ortizpenaranda (github)
 ```
-|__ informe.pdf # Informe técnico (se espera no más de 10 folios de contenido)
+|__ informe.pdf # Informe técnico
 |__ README.md # Documento que describe el formato de este proyecto
 |__ main.ipynb # Fichero principal que accede a los distintos main.ipynb de cada parte
 |__ k_brazos
