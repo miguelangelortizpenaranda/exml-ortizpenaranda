@@ -23,9 +23,6 @@ def get_algorithm_label(algo: Algorithm) -> str:
         label += f" (c={algo.c})"
     elif isinstance(algo, Softmax):
         label += f" (temperature={algo.temperature})"
-    # elif isinstance(algo, OtroAlgoritmo):
-    #     label += f" (parametro={algo.parametro})"
-    # Añadir más condiciones para otros algoritmos aquí
     else:
         raise ValueError("El algoritmo debe ser de la clase Algorithm o una subclase.")
     return label
